@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import os
-
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 from dotenv import load_dotenv
+
 from modules.db import db
 
 router = Router()
@@ -21,8 +21,7 @@ def _owner_only(func):
         owner_id = int(os.environ.get("OWNER_ID", 0))
         if message.from_user and message.from_user.id == owner_id:
             return await func(message, *args, **kwargs)
-        await message.answer("\ud83d\udeab Access denied.")
-
+        await message.answer("🚫 Access denied.")
     return wrapper
 
 
@@ -35,8 +34,7 @@ async def add_admin(message: Message) -> None:
         return
     uid = int(parts[1])
     await db.execute(
-        "INSERT INTO admins(user_id) VALUES($1) ON CONFLICT DO NOTHING",
-        uid,
+        "INSERT INTO admins(user_id) VALUES($1) ON CONFLICT DO NOTHING", uid
     )
     await message.answer(f"Added admin {uid}")
 
