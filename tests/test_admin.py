@@ -7,6 +7,7 @@ import os
 import pytest
 
 from modules import admin
+from modules import db as db_module
 
 
 class FakeFrom:
@@ -26,8 +27,24 @@ class FakeMessage:
 
 def setup_env(tmp_path):
     os.environ["OWNER_ID"] = "1"
-    os.environ["DB_TYPE"] = "sqlite"
-    os.environ["DATABASE_PATH"] = str(tmp_path / "test.db")
+
+    class DummyDB:
+        def __init__(self):
+            self.admins = set()
+
+        async def execute(self, query: str, *args):
+            if query.startswith("CREATE TABLE"):
+                return
+            if query.startswith("INSERT"):
+                self.admins.add(args[0])
+            elif query.startswith("DELETE"):
+                self.admins.discard(args[0])
+
+        async def fetch(self, query: str, *args):
+            return [{"user_id": uid} for uid in sorted(self.admins)]
+
+    db_module.db = DummyDB()
+    admin.db = db_module.db
 
 
 @pytest.mark.asyncio
