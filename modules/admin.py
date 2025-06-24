@@ -59,7 +59,7 @@ def _owner_only(func):
         owner_id = int(os.environ.get("OWNER_ID", 0))
         if message.from_user and message.from_user.id == owner_id:
             return await func(message, *args, **kwargs)
-
+        await message.answer("\ud83d\udeab Access denied.")
     return wrapper
 
 
